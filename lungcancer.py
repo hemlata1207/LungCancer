@@ -21,3 +21,14 @@ from keras.layers import Dense, Dropout, Activation, Flatten
 from keras.layers import Convolution2D
 from keras.models import Sequential
 
+main = tkinter.Tk()
+main.title("Prediction of time-to-event outcomes in diagnosing lung cancer based on  SVM and compare the accuracy of predicted outcome with Deep CNN algorithm")
+main.geometry("1300x1200")
+
+global filename
+global classifier
+global svm_acc, cnn_acc
+global X, Y
+global X_train, X_test, y_train, y_test
+global pca
+
