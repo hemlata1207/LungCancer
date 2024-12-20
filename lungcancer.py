@@ -90,7 +90,38 @@ def executeCNN():
     text.insert(END,"CNN Accuracy : "+str(cnn_acc)+"\n")
     
 
+def predictCancer():
+    filename = filedialog.askopenfilename(initialdir="testSamples")
+    img = cv2.imread(filename)
+    img = cv2.resize(img, (64,64))
+    im2arr = np.array(img)
+    im2arr = im2arr.reshape(64,64,3)
+    im2arr = im2arr.astype('float32')
+    im2arr = im2arr/255
+    test = []
+    test.append(im2arr)
+    test = np.asarray(test)
+    test = np.reshape(test, (test.shape[0],(test.shape[1]*test.shape[2]*test.shape[3])))
+    test = pca.transform(test)
+    predict = classifier.predict(test)[0]
+    msg = ''
+    if predict == 0:
+        msg = "Uploaded CT Scan is Normal"
+    if predict == 1:
+        msg = "Uploaded CT Scan is Abnormal"
+    img = cv2.imread(filename)
+    img = cv2.resize(img, (400,400))
+    cv2.putText(img, msg, (10, 25),  cv2.FONT_HERSHEY_SIMPLEX,0.7, (0, 255, 255), 2)
+    cv2.imshow(msg, img)
+    cv2.waitKey(0)    
 
+def graph():
+    height = [svm_acc, cnn_acc]
+    bars = ('SVM Accuracy','CNN Accuracy')
+    y_pos = np.arange(len(bars))
+    plt.bar(y_pos, height)
+    plt.xticks(y_pos, bars)
+    plt.show()
 
 font = ('times', 14, 'bold')
 title = Label(main, text='Prediction of time-to-event outcomes in diagnosing lung cancer based on  SVM and compare the accuracy of predicted outcome with Deep CNN algorithm')
