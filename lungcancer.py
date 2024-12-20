@@ -32,6 +32,64 @@ global X, Y
 global X_train, X_test, y_train, y_test
 global pca
 
+def uploadDataset():
+    global filename
+    filename = filedialog.askdirectory(initialdir=".")
+    text.delete('1.0', END)
+    text.insert(END,filename+" loaded\n");
+    
+    
+def splitDataset():
+    global X, Y
+    global X_train, X_test, y_train, y_test
+    global pca
+    text.delete('1.0', END)
+    X = np.load('features/X.txt.npy')
+    Y = np.load('features/Y.txt.npy')
+    X = np.reshape(X, (X.shape[0],(X.shape[1]*X.shape[2]*X.shape[3])))
+
+    pca = PCA(n_components = 100)
+    X = pca.fit_transform(X)
+    print(X.shape)
+    X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2)
+    text.insert(END,"Total CT Scan Images Found in dataset : "+str(len(X))+"\n")
+    text.insert(END,"Train split dataset to 80% : "+str(len(X_train))+"\n")
+    text.insert(END,"Test split dataset to 20%  : "+str(len(X_test))+"\n")
+
+
+def executeSVM():
+    global classifier
+    global svm_acc
+    text.delete('1.0', END)
+    cls = svm.SVC() 
+    cls.fit(X_train, y_train)
+    predict = cls.predict(X_test)
+    svm_acc = accuracy_score(y_test,predict) * 100
+    classifier = cls
+    text.insert(END,"SVM Accuracy : "+str(svm_acc)+"\n")
+
+def executeCNN():
+    global cnn_acc
+    X = np.load('features/X.txt.npy')
+    Y = np.load('features/Y.txt.npy')
+    Y = to_categorical(Y)
+    classifier = Sequential()
+    classifier.add(Convolution2D(32, 3, 3, input_shape = (64, 64, 3), activation = 'relu'))
+    classifier.add(MaxPooling2D(pool_size = (2, 2)))
+    classifier.add(Convolution2D(32, 3, 3, activation = 'relu'))
+    classifier.add(MaxPooling2D(pool_size = (2, 2)))
+    classifier.add(Flatten())
+    classifier.add(Dense(output_dim = 256, activation = 'relu'))
+    classifier.add(Dense(output_dim = 2, activation = 'softmax'))
+    print(classifier.summary())
+    classifier.compile(optimizer = 'adam', loss = 'categorical_crossentropy', metrics = ['accuracy'])
+    hist = classifier.fit(X, Y, batch_size=16, epochs=12, shuffle=True, verbose=2)
+    hist = hist.history
+    acc = hist['accuracy']
+    cnn_acc = acc[9] * 100
+    text.insert(END,"CNN Accuracy : "+str(cnn_acc)+"\n")
+    
+
 
 
 font = ('times', 14, 'bold')
